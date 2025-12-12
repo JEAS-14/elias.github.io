@@ -1,0 +1,423 @@
+<!doctype html>
+<html lang="es" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ELÍAS.DEV - Portafolio</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* ... (Mismos estilos base de antes) ... */
+    body { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+    html, body { height: 100%; overflow-x: hidden; scroll-behavior: smooth; }
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&family=JetBrains+Mono:wght@400;700&display=swap');
+    
+    .mono { font-family: 'JetBrains Mono', monospace; }
+    
+    /* Constelaciones */
+    #constellation-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+    
+    /* Efecto Glassmorphism Genérico */
+    .glass-panel {
+      background: rgba(30, 41, 59, 0.4);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(56, 189, 248, 0.1);
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Cards con Spotlight */
+    .project-card { position: relative; overflow: hidden; transition: transform 0.3s ease, box-shadow 0.3s ease; }
+    .project-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(56, 189, 248, 0.1), transparent 50%);
+      opacity: 0; transition: opacity 0.3s ease; pointer-events: none;
+    }
+    .project-card:hover::before { opacity: 1; }
+    .project-card:hover { transform: translateY(-5px); border-color: rgba(56, 189, 248, 0.4); }
+
+    /* Gradient Text */
+    .gradient-text {
+      background: linear-gradient(135deg, #38bdf8 0%, #818cf8 50%, #c084fc 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+
+    /* Dock Flotante */
+    .tech-dock { backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); }
+    .tech-icon { transition: transform 0.2s ease; cursor: pointer; }
+    .tech-icon:hover { transform: scale(1.3) translateY(-10px); }
+
+    /* Animaciones */
+    @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-15px); } }
+    .float-animation { animation: float 6s ease-in-out infinite; }
+    
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #0f172a; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #475569; }
+  </style>
+ </head>
+ 
+ <body class="bg-slate-950 text-slate-200 selection:bg-cyan-500/30 selection:text-cyan-200">
+  
+  <canvas id="constellation-canvas"></canvas>
+
+  <div class="relative z-10 w-full">
+    
+    <nav class="fixed top-0 w-full z-50 glass-panel border-b border-slate-800/50">
+      <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+        <span class="font-bold text-xl tracking-tighter text-white">ELÍAS<span class="text-cyan-400">.DEV</span></span>
+        <div class="hidden md:flex gap-8 text-sm font-medium text-slate-400">
+          <a href="#about" class="hover:text-cyan-400 transition-colors">Sobre Mí</a>
+          <a href="#stack" class="hover:text-cyan-400 transition-colors">Stack</a>
+          <a href="#projects" class="hover:text-cyan-400 transition-colors">Proyectos</a>
+          <a href="#contact" class="hover:text-cyan-400 transition-colors">Contacto</a>
+        </div>
+      </div>
+    </nav>
+
+    <section class="min-h-screen flex flex-col justify-center px-6 pt-20 relative overflow-hidden">
+      <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-cyan-500/10 rounded-full blur-[100px] -z-10"></div>
+      
+      <div class="max-w-4xl mx-auto text-center">
+        <div class="inline-block px-3 py-1 mb-6 rounded-full border border-cyan-500/30 bg-cyan-950/30 text-cyan-400 text-xs tracking-widest uppercase font-bold backdrop-blur-md">
+           Disponible para trabajar
+        </div>
+        <h1 class="text-6xl md:text-9xl font-black mb-6 tracking-tighter text-white drop-shadow-2xl">
+          ELÍAS<span class="text-cyan-500">.DEV</span>
+        </h1>
+        <p class="text-xl md:text-2xl text-slate-400 font-light max-w-2xl mx-auto mb-10 leading-relaxed">
+          Ingeniero en formación. Fusionando <span class="text-slate-100 font-medium">Datos</span>, <span class="text-slate-100 font-medium">Código</span> e <span class="text-slate-100 font-medium">Infraestructura</span> para crear soluciones reales.
+        </p>
+        <div class="flex gap-4 justify-center">
+          <a href="#projects" class="px-8 py-3 bg-white text-slate-950 font-bold rounded-full hover:bg-cyan-50 transition-all hover:scale-105">Ver Trabajo</a>
+          <a href="#contact" class="px-8 py-3 border border-slate-700 text-white rounded-full hover:bg-white/5 transition-all">Contáctame</a>
+        </div>
+      </div>
+    </section>
+
+    <section id="about" class="py-20 px-6">
+      <div class="max-w-5xl mx-auto">
+        <div class="glass-panel rounded-3xl p-8 md:p-12 flex flex-col md:flex-row gap-12 items-center">
+          <div class="w-48 h-48 shrink-0 relative">
+            <div class="absolute inset-0 bg-gradient-to-tr from-cyan-500 to-blue-600 rounded-full blur-xl opacity-50 animate-pulse"></div>
+            <div class="relative w-full h-full rounded-full border-4 border-slate-800 bg-slate-900 overflow-hidden shadow-2xl">
+              <img src="/perfil.png" alt="Elías" class="w-full h-full object-cover">
+              <div class="absolute inset-0 flex items-center justify-center text-4xl bg-slate-800">👨‍💻</div>
+            </div>
+          </div>
+          
+          <div class="text-center md:text-left">
+            <h2 class="text-3xl font-bold text-white mb-6">Más que código 🚀</h2>
+            <p class="text-slate-300 text-lg leading-relaxed mb-6">
+              Soy un perfil híbrido. No me conformo con solo escribir líneas de código; necesito entender los datos que hay detrás y la infraestructura que lo sostiene. 
+            </p>
+            <p class="text-slate-300 text-lg leading-relaxed mb-6">
+              Actualmente estoy cursando mis estudios en ingeniería y aplicando mis conocimientos en proyectos reales de <strong class="text-cyan-400">Análisis de Datos</strong> y <strong class="text-cyan-400">Desarrollo Web</strong>. Mi objetivo es convertirme en un Arquitecto de Soluciones completo.
+            </p>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
+              <div class="p-3 rounded-lg bg-slate-800/50 border border-slate-700 text-center">
+                <div class="text-cyan-400 font-bold text-xl">Lima</div>
+                <div class="text-xs text-slate-500 uppercase">Ubicación</div>
+              </div>
+              <div class="p-3 rounded-lg bg-slate-800/50 border border-slate-700 text-center">
+                <div class="text-purple-400 font-bold text-xl">ESP/ENG</div>
+                <div class="text-xs text-slate-500 uppercase">Idiomas</div>
+              </div>
+              <div class="p-3 rounded-lg bg-slate-800/50 border border-slate-700 text-center">
+                <div class="text-green-400 font-bold text-xl">Remoto</div>
+                <div class="text-xs text-slate-500 uppercase">Modalidad</div>
+              </div>
+              <div class="p-3 rounded-lg bg-slate-800/50 border border-slate-700 text-center">
+                <div class="text-yellow-400 font-bold text-xl">Junior</div>
+                <div class="text-xs text-slate-500 uppercase">Nivel</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="stack" class="py-10 px-6">
+      <div class="max-w-6xl mx-auto">
+        <h2 class="text-3xl font-bold text-white mb-10 text-center">Mi Arsenal Tecnológico 🛠️</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          
+          <div class="glass-panel p-6 rounded-2xl hover:border-cyan-500/30 transition-colors">
+            <div class="w-10 h-10 rounded-lg bg-cyan-500/10 flex items-center justify-center text-xl mb-4 text-cyan-400">💻</div>
+            <h3 class="text-xl font-bold text-white mb-4">Desarrollo Web</h3>
+            <ul class="space-y-3">
+              <li class="flex items-center gap-3 text-slate-300">
+                <span class="w-2 h-2 rounded-full bg-cyan-400"></span> React / Next.js
+              </li>
+              <li class="flex items-center gap-3 text-slate-300">
+                <span class="w-2 h-2 rounded-full bg-yellow-400"></span> JavaScript (ES6+)
+              </li>
+              <li class="flex items-center gap-3 text-slate-300">
+                <span class="w-2 h-2 rounded-full bg-blue-500"></span> Tailwind CSS
+              </li>
+              <li class="flex items-center gap-3 text-slate-300">
+                <span class="w-2 h-2 rounded-full bg-orange-500"></span> HTML5 / CSS3
+              </li>
+            </ul>
+          </div>
+
+          <div class="glass-panel p-6 rounded-2xl hover:border-purple-500/30 transition-colors">
+            <div class="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center text-xl mb-4 text-purple-400">📊</div>
+            <h3 class="text-xl font-bold text-white mb-4">Datos & Backend</h3>
+            <ul class="space-y-3">
+              <li class="flex items-center gap-3 text-slate-300">
+                <span class="w-2 h-2 rounded-full bg-blue-400"></span> Python (Pandas/NumPy)
+              </li>
+              <li class="flex items-center gap-3 text-slate-300">
+                <span class="w-2 h-2 rounded-full bg-yellow-600"></span> Power BI / DAX
+              </li>
+              <li class="flex items-center gap-3 text-slate-300">
+                <span class="w-2 h-2 rounded-full bg-blue-600"></span> SQL / MySQL
+              </li>
+              <li class="flex items-center gap-3 text-slate-300">
+                <span class="w-2 h-2 rounded-full bg-green-500"></span> Node.js
+              </li>
+            </ul>
+          </div>
+
+          <div class="glass-panel p-6 rounded-2xl hover:border-orange-500/30 transition-colors">
+            <div class="w-10 h-10 rounded-lg bg-orange-500/10 flex items-center justify-center text-xl mb-4 text-orange-400">📡</div>
+            <h3 class="text-xl font-bold text-white mb-4">Infra & Herramientas</h3>
+            <ul class="space-y-3">
+              <li class="flex items-center gap-3 text-slate-300">
+                <span class="w-2 h-2 rounded-full bg-orange-500"></span> Git / GitHub
+              </li>
+              <li class="flex items-center gap-3 text-slate-300">
+                <span class="w-2 h-2 rounded-full bg-blue-400"></span> Docker
+              </li>
+              <li class="flex items-center gap-3 text-slate-300">
+                <span class="w-2 h-2 rounded-full bg-indigo-500"></span> Redes / Networking
+              </li>
+              <li class="flex items-center gap-3 text-slate-300">
+                <span class="w-2 h-2 rounded-full bg-white"></span> Linux (Básico)
+              </li>
+            </ul>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <section id="projects" class="py-20 px-6">
+      <div class="max-w-7xl mx-auto">
+        <h2 class="text-4xl font-black mb-4 text-center text-white">Proyectos Destacados</h2>
+        <p class="text-center text-slate-400 mb-16 text-lg">Evidencia práctica de mis habilidades</p>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div class="project-card glass-panel rounded-2xl p-8 border border-slate-700/50">
+            <div class="flex justify-between items-start mb-4">
+               <div class="flex items-center gap-3">
+                  <span class="text-2xl">♻️</span>
+                  <h3 class="text-2xl font-bold text-white">EcoCollect</h3>
+               </div>
+               <span class="px-2 py-1 bg-cyan-500/10 text-cyan-400 text-xs rounded border border-cyan-500/20 uppercase">Web App</span>
+            </div>
+            <p class="text-slate-300 mb-6 leading-relaxed">Plataforma web para conectar ciudadanos con recolectores. Desarrollé el flujo completo de usuario y la interfaz responsiva.</p>
+            <div class="flex gap-2 flex-wrap mb-6">
+              <span class="px-3 py-1 bg-slate-800 rounded-full text-xs text-cyan-300 border border-slate-700">Next.js</span>
+              <span class="px-3 py-1 bg-slate-800 rounded-full text-xs text-cyan-300 border border-slate-700">React</span>
+              <span class="px-3 py-1 bg-slate-800 rounded-full text-xs text-cyan-300 border border-slate-700">Tailwind</span>
+            </div>
+            <a href="#" class="inline-flex items-center text-cyan-400 hover:text-white transition-colors font-medium text-sm group">
+              Ver Proyecto <span class="ml-2 group-hover:translate-x-1 transition-transform">→</span>
+            </a>
+          </div>
+
+          <div class="project-card glass-panel rounded-2xl p-8 border border-slate-700/50">
+            <div class="flex justify-between items-start mb-4">
+               <div class="flex items-center gap-3">
+                  <span class="text-2xl">📊</span>
+                  <h3 class="text-2xl font-bold text-white">Tinkuy BI</h3>
+               </div>
+               <span class="px-2 py-1 bg-purple-500/10 text-purple-400 text-xs rounded border border-purple-500/20 uppercase">Analytics</span>
+            </div>
+            <p class="text-slate-300 mb-6 leading-relaxed">Dashboard interactivo para E-commerce. Visualización de KPIs clave para la toma de decisiones basada en datos.</p>
+            <div class="flex gap-2 flex-wrap mb-6">
+              <span class="px-3 py-1 bg-slate-800 rounded-full text-xs text-purple-300 border border-slate-700">Power BI</span>
+              <span class="px-3 py-1 bg-slate-800 rounded-full text-xs text-purple-300 border border-slate-700">SQL</span>
+              <span class="px-3 py-1 bg-slate-800 rounded-full text-xs text-purple-300 border border-slate-700">ETL</span>
+            </div>
+            <a href="#" class="inline-flex items-center text-purple-400 hover:text-white transition-colors font-medium text-sm group">
+              Ver Dashboard <span class="ml-2 group-hover:translate-x-1 transition-transform">→</span>
+            </a>
+          </div>
+
+          <div class="project-card glass-panel rounded-2xl p-8 border border-slate-700/50">
+            <div class="flex justify-between items-start mb-4">
+               <div class="flex items-center gap-3">
+                  <span class="text-2xl">📡</span>
+                  <h3 class="text-2xl font-bold text-white">Redes UPN</h3>
+               </div>
+               <span class="px-2 py-1 bg-orange-500/10 text-orange-400 text-xs rounded border border-orange-500/20 uppercase">Infra</span>
+            </div>
+            <p class="text-slate-300 mb-6 leading-relaxed">Proyecto de optimización de cobertura Wi-Fi universitaria mediante análisis de espectro y mapas de calor.</p>
+            <div class="flex gap-2 flex-wrap mb-6">
+              <span class="px-3 py-1 bg-slate-800 rounded-full text-xs text-orange-300 border border-slate-700">Networking</span>
+              <span class="px-3 py-1 bg-slate-800 rounded-full text-xs text-orange-300 border border-slate-700">Cisco</span>
+            </div>
+             <a href="#" class="inline-flex items-center text-orange-400 hover:text-white transition-colors font-medium text-sm group">
+              Ver Caso <span class="ml-2 group-hover:translate-x-1 transition-transform">→</span>
+            </a>
+          </div>
+
+          <div class="project-card glass-panel rounded-2xl p-8 border border-slate-700/50">
+            <div class="flex justify-between items-start mb-4">
+               <div class="flex items-center gap-3">
+                  <span class="text-2xl">🧠</span>
+                  <h3 class="text-2xl font-bold text-white">Predicción AI</h3>
+               </div>
+               <span class="px-2 py-1 bg-blue-500/10 text-blue-400 text-xs rounded border border-blue-500/20 uppercase">Python</span>
+            </div>
+            <p class="text-slate-300 mb-6 leading-relaxed">Modelo de Machine Learning para predecir tendencias de comportamiento de usuarios basado en datos históricos.</p>
+            <div class="flex gap-2 flex-wrap mb-6">
+              <span class="px-3 py-1 bg-slate-800 rounded-full text-xs text-blue-300 border border-slate-700">Python</span>
+              <span class="px-3 py-1 bg-slate-800 rounded-full text-xs text-blue-300 border border-slate-700">Scikit-Learn</span>
+              <span class="px-3 py-1 bg-slate-800 rounded-full text-xs text-blue-300 border border-slate-700">Pandas</span>
+            </div>
+             <a href="#" class="inline-flex items-center text-blue-400 hover:text-white transition-colors font-medium text-sm group">
+              Ver Código <span class="ml-2 group-hover:translate-x-1 transition-transform">→</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="contact" class="py-20 px-6 mb-20">
+      <div class="max-w-2xl mx-auto">
+        <div class="glass-panel rounded-3xl p-8 md:p-12 relative overflow-hidden">
+          <div class="absolute top-0 right-0 w-32 h-32 bg-cyan-500/20 rounded-full blur-3xl -z-10"></div>
+          
+          <h2 class="text-3xl font-black mb-4 text-center text-white">¿Hablamos?</h2>
+          <p class="text-slate-400 text-center mb-8">Si buscas a alguien con ganas de aprender y aportar valor, envíame un mensaje.</p>
+          
+          <form class="space-y-4">
+            <div>
+               <input type="text" placeholder="Tu Nombre" class="w-full px-4 py-3 bg-slate-900/50 border border-slate-700 rounded-lg focus:outline-none focus:border-cyan-500 text-white placeholder-slate-500 transition-colors">
+            </div>
+            <div>
+               <input type="email" placeholder="Tu Email" class="w-full px-4 py-3 bg-slate-900/50 border border-slate-700 rounded-lg focus:outline-none focus:border-cyan-500 text-white placeholder-slate-500 transition-colors">
+            </div>
+            <div>
+               <textarea rows="4" placeholder="¿Cómo puedo ayudarte?" class="w-full px-4 py-3 bg-slate-900/50 border border-slate-700 rounded-lg focus:outline-none focus:border-cyan-500 text-white placeholder-slate-500 transition-colors resize-none"></textarea>
+            </div>
+            <button type="submit" class="w-full px-8 py-4 bg-white text-slate-900 font-bold rounded-lg hover:bg-cyan-50 transition-all hover:scale-[1.02]">
+               Enviar Mensaje
+            </button>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <footer class="py-8 border-t border-slate-800/50 text-center text-slate-500 text-sm">
+      <div class="flex justify-center gap-6 mb-4">
+         <a href="#" class="hover:text-cyan-400 transition-colors">LinkedIn</a>
+         <a href="#" class="hover:text-cyan-400 transition-colors">GitHub</a>
+         <a href="#" class="hover:text-cyan-400 transition-colors">Email</a>
+      </div>
+      <p>© 2025 ELÍAS.DEV</p>
+    </footer>
+
+    <div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
+       <div class="tech-dock bg-slate-900/70 rounded-full px-6 py-3 flex gap-4 items-end shadow-2xl border border-white/10">
+         <div class="tech-icon text-2xl" title="Java">☕</div>
+         <div class="tech-icon text-2xl" title="JS">🟨</div>
+         <div class="tech-icon text-2xl" title="Python">🐍</div>
+         <div class="tech-icon text-2xl" title="React">⚛️</div>
+         <div class="tech-icon text-2xl" title="SQL">💾</div>
+         <div class="tech-icon text-2xl" title="Git">🔀</div>
+       </div>
+    </div>
+
+  </div>
+
+  <script>
+    // Animación de Constelaciones (Fondo)
+    const canvas = document.getElementById('constellation-canvas');
+    const ctx = canvas.getContext('2d');
+    
+    // Ajustar tamaño
+    function resize() {
+       canvas.width = window.innerWidth;
+       canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+    
+    const particles = [];
+    const particleCount = 60; // Cantidad de estrellas
+    
+    class Particle {
+      constructor() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.vx = (Math.random() - 0.5) * 0.3; // Velocidad lenta
+        this.vy = (Math.random() - 0.5) * 0.3;
+        this.size = Math.random() * 2;
+      }
+      update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+        if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+      }
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(56, 189, 248, 0.5)'; // Color Cyan suave
+        ctx.fill();
+      }
+    }
+    
+    // Inicializar
+    for (let i = 0; i < particleCount; i++) particles.push(new Particle());
+    
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // Dibujar partículas y líneas
+      particles.forEach((p, index) => {
+        p.update();
+        p.draw();
+        
+        // Conectar con líneas si están cerca
+        for (let j = index + 1; j < particles.length; j++) {
+           const p2 = particles[j];
+           const dx = p.x - p2.x;
+           const dy = p.y - p2.y;
+           const dist = Math.sqrt(dx*dx + dy*dy);
+           
+           if (dist < 120) {
+             ctx.beginPath();
+             ctx.moveTo(p.x, p.y);
+             ctx.lineTo(p2.x, p2.y);
+             ctx.strokeStyle = `rgba(56, 189, 248, ${1 - dist/120})`; // Línea que se desvanece
+             ctx.lineWidth = 0.5;
+             ctx.stroke();
+           }
+        }
+      });
+      requestAnimationFrame(animate);
+    }
+    animate();
+
+    // Efecto Spotlight para las tarjetas
+    document.querySelectorAll('.project-card').forEach(card => {
+      card.addEventListener('mousemove', (e) => {
+        const rect = card.getBoundingClientRect();
+        const x = ((e.clientX - rect.left) / rect.width) * 100;
+        const y = ((e.clientY - rect.top) / rect.height) * 100;
+        card.style.setProperty('--mouse-x', `${x}%`);
+        card.style.setProperty('--mouse-y', `${y}%`);
+      });
+    });
+  </script>
+ </body>
+</html>
