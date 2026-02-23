@@ -1,38 +1,36 @@
 import Head from 'next/head'
-import Navbar from '../components/Navbar'
-import Background from '../components/Background'
-import Hero from '../components/Hero'
-import About from '../components/About'
-import TechStack from '../components/TechStack'
-import Projects from '../components/Projects'
-import ContactForm from '../components/ContactForm'
-import Footer from '../components/Footer'
-import FloatingDock from '../components/FloatingDock'
+import { SITE_CONFIG } from '@/config/constants'
+import Navbar from '@/components/layout/Navbar'
+import Background from '@/components/layout/Background'
+import Hero from '@/components/sections/Hero'
+import About from '@/components/sections/About'
+import TechStack from '@/components/sections/TechStack'
+import Projects from '@/components/sections/Projects'
+import ContactForm from '@/components/forms/ContactForm'
+import Footer from '@/components/layout/Footer'
 
 export default function Home() {
   return (
     <>
       <Head>
-        <title>Elías | Portfolio</title>
+        <title>{SITE_CONFIG.title}</title>
+        <meta name="description" content={SITE_CONFIG.description} />
+        <meta property="og:title" content={SITE_CONFIG.title} />
+        <meta property="og:description" content={SITE_CONFIG.description} />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
 
-      {/* 1. Fondo y Navegación Global */}
+      {/* Fondo y Navegación Global */}
       <Background />
       <Navbar />
       
-      <main className="relative z-10 min-h-screen px-4 pt-20 pb-40 font-sans selection:bg-cyan-500 selection:text-black">
-        
-        {/* 2. Invocamos cada sección en orden */}
+      <main className="relative z-10 min-h-screen selection:bg-cyan-500 selection:text-black">
         <Hero />
+        <Projects />
         <About />
         <TechStack />
-        <Projects />
         <ContactForm />
         <Footer />
-        
-        {/* 3. Elementos Flotantes */}
-        <FloatingDock />
-        
       </main>
     </>
   )
